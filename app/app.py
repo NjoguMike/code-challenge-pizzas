@@ -107,7 +107,7 @@ def restaurant_pizzas():
     db.session.commit()
 
     response = make_response(
-        jsonify(new_post),
+        jsonify(new_post.to_dict()),
         201
     )
     return response
