@@ -37,15 +37,15 @@ with app.app_context():
         db.session.add(pizza)
         db.session.commit()
 
-    # price_list = [12,23,3,17,23,12,30,19,23,10,21]
-    # for resto_pizz in range(10):
-    #     # price =1
-    #     rest_piz = Restaurant_Pizza(
-    #         pizza_id = random.choice(pizzas).id,
-    #         restaurant_id = random.choice(restaurants).id,
-    #         price = 10
-    #     )
+    price_list = [12,23,3,17,23,12,30,19,23,10,21]
+    for resto_pizz in range(10):
+        # price =1
+        rest_piz = Restaurant_Pizza(
+            pizza_id = random.choice(pizzas).id,
+            restaurant_id = random.choice(restaurants).id,
+            price = random.choice(price_list)
+        )
 
-    #     db.session.add(rest_piz)
-    #     db.session.commit()
+        db.session.add(rest_piz)
+        db.session.commit()
 

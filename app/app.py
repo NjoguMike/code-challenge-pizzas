@@ -3,7 +3,7 @@
 from flask import Flask, make_response, jsonify, request
 from flask_migrate import Migrate
 
-from models import db, Restaurant, Pizzas
+from models import db, Restaurant, Pizzas, Restaurant_Pizza
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
@@ -21,16 +21,7 @@ def home():
 @app.route('/restaurants')
 def restaurant():
 
-    restaurants = []
-
-    for rest in Restaurant.query.all():
-        restaurant = {
-            "id":rest.id,
-            "name": rest.name,
-            "address":rest.address,
-            "restaurant_pizzas":rest.restaurant_pizzas
-        }
-        restaurants.append(restaurant)
+    restaurants = [restaurant.to_dict() for restaurant in Restaurant.query.all()]
 
     response = make_response(
         jsonify(restaurants),
@@ -55,23 +46,40 @@ def single_restaurant(id):
         elif restaurant:
 
             response = make_response(
-                jsonify(restaurant),
+                jsonify(restaurant.to_dict()),
                 200
             )
             return response
     elif request.method == 'DELETE':
         restaurant = Restaurant.query.filter_by(id=id).first()
-        restaurant.query.delete()
-        db.session.commit()
+        
+        if restaurant:
+            restaurant_pizza = Restaurant_Pizza.query.filter_by(restaurant_id=id).all()
 
-        response = make_response(
-            jsonify({
-                "Delete_successful" : True,
-                "message" : "Restaurant successfully deleted."
-            }),
-            200
-        )
-        return response
+            for item in restaurant_pizza:
+                db.session.delete(item)
+                db.session.commit()
+
+            db.session.delete(restaurant)
+            db.session.commit()
+
+            response = make_response(
+                jsonify({
+                    "Delete_successful" : True,
+                    "message" : "Restaurant successfully deleted."
+                }),
+                200
+            )
+            return response
+        
+        elif restaurant == None:
+            response = make_response(
+                jsonify({
+                    "error": "Restaurant not found"
+                    }),
+                404
+            )
+            return response
 
 @app.route('/pizzas')
 def pizzas():
@@ -93,8 +101,6 @@ def restaurant_pizzas():
         "pizza_id": data["pizza_id"],
         "restaurant_id": data["restaurant_id"],
         "price": data["price"],
-        "created_at": data["created_at"],
-        "updated_at": data["updated_at"]
     }
 
     db.session.add(new_post)
